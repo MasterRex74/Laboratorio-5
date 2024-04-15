@@ -1,0 +1,29 @@
+/*
+ * PWM1.h
+ *
+ * Created: 15/04/2024 13:25:09
+ *  Author: Luis
+ */ 
+
+
+#ifndef PWM1_H_
+#define PWM1_H_
+
+#include <stdint.h>
+#include <avr/io.h>
+
+#define invertir 1
+#define n_invertir 0
+
+//FUCNION PARA CONFIGURAR PWMO MODO FAST CANAL A
+void initPWM1FastA(uint8_t inverted, uint16_t prescaler);
+
+void initPWM1FastB(uint8_t inverted, uint16_t prescaler);
+
+void UPDATEDUTYCYCLEA1(uint8_t duty);
+
+void UPDATEDUTYCYCLEB1(uint8_t duty);
+
+
+
+#endif /* PWM1_H_ */
