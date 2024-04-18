@@ -1,0 +1,89 @@
+//*******************************************************************************************************************************************
+//Universidad del Valle de Guatemala
+//IE2023 Programación de Microcontroladores
+//main.c
+//Proyecto: LAB 5
+//Hardware: ATMEGA328P
+//Created: 04/16/2024
+//Author : Juan Luis Monzón Catalán
+//********************************************************************************************************************************************
+
+//********************************************************************************************************************************************
+// LIBRERIAS
+//********************************************************************************************************************************************
+# define F_CPU 16000000
+#include <avr/io.h>
+#include <avr/interrupt.h>
+#include <stdint.h>
+#include <util/delay.h>
+#include "ADC/ADC.h"
+#include "PWM1/PWM1.h"
+#include "PWM2/PWM2.h"
+#include "PWM0/PWM0.h"
+
+//********************************************************************************************************************************************
+//V. G.
+//********************************************************************************************************************************************
+uint8_t POT = 0;
+uint8_t POT1 = 0;															//VARIABLE DEL POTENCIOMETRO 1
+uint8_t POT2 = 0;															//VARIABLE DEL POTENCIOMETRO 2
+uint8_t POT3 = 0;															//VARIABLE DEL POTENCIOMETRO 3
+
+//********************************************************************************************************************************************
+//MAIN
+//********************************************************************************************************************************************
+int main(void)
+{	
+	CLKPR |= (1 << CLKPCE);
+	CLKPR |= (1 << CLKPS0);													//FRECUENCIA 8MHz
+	
+	DIDR0 |= (1 << ADC5D);
+	
+	setPWM0fastA(0, _FF0, 1024);											//SETEAMOS EL PWM CON EL TIMER 0
+	_delay_ms(10);
+	
+	setPWM1fastA(0, _8bits, 1024);											//SETEAMOS EL PWM CON EL TIMER 1
+	_delay_ms(10);
+	
+	setPWM2fastA(0, _FF2, 1024);											//SETEAMOS EL PWM CON EL TIMER 2
+	_delay_ms(10);
+	
+	setADC(externo, izquierda, 7);											//SETEAMOS EL ADC
+	
+	controlADC(1, 0, 1, 128);												//SETEAMOS LO PARAMETROS DE CONTROL DEL ADC
+	
+	sei();																	//HABILITAMOS LAS INTERRUPCIONES GLOBALES
+	
+    while (1) 
+    {
+		ADCSRA |= (1 << ADSC);
+		
+		updateDutyA1(POT1/6);
+		updateDutyA2(POT2/6);
+		updateDutyA0(POT3);
+		
+		_delay_ms(10);
+    }
+}
+
+//********************************************************************************************************************************************
+//INTERRUPCIONES
+//********************************************************************************************************************************************
+ISR(ADC_vect){
+	POT = (ADMUX & 0x0F);
+	
+	if (POT == 7){
+		POT1 = ADCH;
+		setADC(externo, izquierda,6);
+	}
+	else if (POT == 6){
+		POT2 = ADCH;
+		setADC(externo, izquierda, 5);
+	}
+	else {
+		POT3 = ADCH;
+		setADC(externo, izquierda, 7);
+	}
+	
+	ADCSRA |= (1 << ADIF);													//APAGAR LA BANDERA ADC
+}
